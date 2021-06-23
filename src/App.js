@@ -1,6 +1,6 @@
 // Imports
 import React, { Component } from 'react'
-import { Route } from "react-router-dom";
+import { Switch, Route } from "react-router-dom";
 import * as BooksAPI from './BooksAPI'
 import './Styles/App.css'
 import AllShelves from './components/AllShelves'
@@ -21,16 +21,44 @@ class BooksApp extends Component {
     showSearchPage: false
   }
 
+  // Component did mount function
+  componentDidMount() {
+    BooksAPI.getAll().then((books) => {
+      console.log(books)
+      this.setState({ books })
+    })
+  }
   // Update Search Function
   updateSearchState = state =>
   {
-    console.log("error", this)
     this.setState({
       showSearchPage: state
     })
   }
 
+  onUpdate = (book, e) => {
+    // console.log(e.target.value,book)
+    const shelf = e.target.value
+    BooksAPI.update(book, shelf).then((res)=>{
+      // console.log(res)
+      const slice = this.state.books.slice()
+      const targetBook = slice.find((selectedbook)=>{
+        return book.id == selectedbook.id
+      })
+      targetBook.shelf = shelf
+      this.setState({
+        books : slice
+      })
+    })
+  }
   render() {
+   
+    // let validBooks = false
+    // const { books } = this. state
+    // if(books.length > 0 && books !== undefined && books !== null)
+    // {
+    //   validBooks =  true
+    // }
     return (
       <div className="app">
         {this.state.showSearchPage ? (
@@ -43,8 +71,10 @@ class BooksApp extends Component {
             <Header />
 
            {/* All 3 Shelves Component */}
-           <AllShelves />
-
+          {
+            this.state.books && this.state.books.length > 0 && 
+            (<AllShelves onUpdate={ this.onUpdate } myBooks={ this.state.books }/>)
+          }
            {/* Search Button Component */}
            <Button showSearchPage={this.updateSearchState}/>
 
